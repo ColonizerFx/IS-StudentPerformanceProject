@@ -2,7 +2,8 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-from sklearn.metrics import confusion_matrix, classification_report
+import numpy as np
+from sklearn.metrics import confusion_matrix, classification_report, silhouette_score
 from sklearn.cluster import KMeans
 
 def evaluate_classification(model, X_test, y_test, task="grade_category"):
@@ -47,9 +48,8 @@ def analyze_clusters(X_raw, cluster_labels):
     """Profiles the resulting clusters to match academic presentation targets."""
     df_analyzed = X_raw.copy()
     df_analyzed['Cluster'] = cluster_labels
-    
+
     cluster_profile = df_analyzed.groupby('Cluster').mean()
     print("\n--- 👥 K-Means Student Cluster Analysis Profile ---")
     print("Use these averages to define: High-Performing, Average, or At-Risk groups:")
-    print(cluster_profile.round(2))
-    return cluster_profile
+    print(cluster_profile.rou
