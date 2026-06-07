@@ -10,53 +10,44 @@ from modules.evaluation import (
 from sklearn.preprocessing import StandardScaler
 
 def main():
-    print("🚀 Running Student Performance Intelligent System Frame in VS Code...")
-    
-    # 1. Pipeline Ingestion
+    print("Running Student Performance Intelligent System...")
+
     df = load_dataset(config.DATA_PATH)
     if df is None:
         return
-        
-    # 2. Preprocessing & Data Splits
+
     X_train_scaled, X_test_scaled, y_train, y_test, X_raw = preprocess_data(
-        df, 
+        df,
         task=config.CLASSIFICATION_TASK,
         test_size=config.TEST_SIZE,
         random_state=config.RANDOM_STATE
     )
-    
-    # 3. Supervised Path: Naive Bayes
-    # Experiment with different var_smoothing values (Gaussian NB hyperparameter tuning)
-    print(f"\nTraining Naive Bayes Classifier for task: '{config.CLASSIFICATION_TASK}'...")
-    print(f"Testing var_smoothing values: {config.NB_VAR_SMOOTHING}")
+
+    # Naive Bayes - test different var_smoothing values
+    print(f"\nTraining Naive Bayes for task: '{config.CLASSIFICATION_TASK}'...")
+    print(f"var_smoothing values: {config.NB_VAR_SMOOTHING}")
     best_nb_model = None
     for smoothing in config.NB_VAR_SMOOTHING:
         print(f"\n[var_smoothing = {smoothing}]")
         nb_model = train_naive_bayes(X_train_scaled, y_train, var_smoothing=smoothing)
         evaluate_classification(nb_model, X_test_scaled, y_test, task=config.CLASSIFICATION_TASK)
-        best_nb_model = nb_model  # keep last model for reference
-    
-    # 4. Unsupervised Path: K-Means Optimal Target Clustering
-    print("\nEvaluating Cluster Counts via Elbow Plot...")
+        best_nb_model = nb_model
+
+    # K-Means - find optimal k using elbow method
     scaler = StandardScaler()
     X_full_scaled = scaler.fit_transform(X_raw)
     plot_elbow_method(X_full_scaled, config.KMEANS_CLUSTERS)
-    
-    # Fit the 3 explicit cluster profiles requested by your brief
-    print("\nGrouping students into 3 target profiles...")
+
+    print("\nRunning K-Means with k=3...")
     final_kmeans, final_cluster_labels = run_kmeans(X_full_scaled, n_clusters=3, random_state=config.RANDOM_STATE)
 
-    # Analyze clusters to determine which group is high-performing vs at-risk
     analyze_clusters(X_raw, final_cluster_labels)
-
-    # Silhouette Score — measures how well-separated the clusters are
     compute_silhouette_score(X_full_scaled, final_cluster_labels)
 
-    # Scatter Plot — visualise clusters using StudyHours vs Attendance (first two features)
     feature_names = list(X_raw.columns[:2])
     plot_cluster_scatter(X_full_scaled, final_cluster_labels, n_clusters=3, feature_names=feature_names)
 
-    print("\n🏁 Process complete!")
+    print("\nDone.")
 
 if __name__ == "__main__":
     main()
