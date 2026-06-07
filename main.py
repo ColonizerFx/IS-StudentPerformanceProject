@@ -42,4 +42,21 @@ def main():
     X_full_scaled = scaler.fit_transform(X_raw)
     plot_elbow_method(X_full_scaled, config.KMEANS_CLUSTERS)
     
-    # Fit the 3 explicit cluster profiles reque
+    # Fit the 3 explicit cluster profiles requested by your brief
+    print("\nGrouping students into 3 target profiles...")
+    final_kmeans, final_cluster_labels = run_kmeans(X_full_scaled, n_clusters=3, random_state=config.RANDOM_STATE)
+
+    # Analyze clusters to determine which group is high-performing vs at-risk
+    analyze_clusters(X_raw, final_cluster_labels)
+
+    # Silhouette Score — measures how well-separated the clusters are
+    compute_silhouette_score(X_full_scaled, final_cluster_labels)
+
+    # Scatter Plot — visualise clusters using StudyHours vs Attendance (first two features)
+    feature_names = list(X_raw.columns[:2])
+    plot_cluster_scatter(X_full_scaled, final_cluster_labels, n_clusters=3, feature_names=feature_names)
+
+    print("\n🏁 Process complete!")
+
+if __name__ == "__main__":
+    main()
